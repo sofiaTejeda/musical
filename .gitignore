@@ -49,6 +49,7 @@ Thumbs.db
 *.txt
 *.csv
 *.7z
+*.xlsx
 DatasetMusica/10000.txt
 DatasetMusica/millionsong.
 DatasetMusica/songs.csv.7z
