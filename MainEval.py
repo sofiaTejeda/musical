@@ -20,31 +20,40 @@ class Main:
     def LoadDataEval(self):
         self.Canciones = pd.read_csv(r'DatasetMusica/song_data.csv')
         self.UserRating= pd.read_csv(r'DatasetMusica/millionsong.csv')
+        self.TrainRating=pd.read_csv(r'traindata.csv')
+        self.TestRating=pd.read_csv(r'testdata.csv')
         
     def LoadDataRecomender(self):
         self.Canciones = pd.read_csv(r'DatasetMusica/song_data.csv')
-        data=pd.read_csv(r'subset.csv')
+        data=pd.read_csv(r'subset2.csv')
         self.UserRating=data
         print('No. Unico Usuarios    :', self.UserRating.user_id.nunique())
         print('No. Unico Canciones :', self.UserRating.song_id.nunique()) 
         print('No. Unico de Escuchas  :', self.UserRating.listen_count.nunique())
     
     def PreprocessData(self,f):
-        users= self.UserRating[['user_id']]
+        users= self.TrainRating[['user_id']]
         users=users.drop_duplicates()
         users = users.sample(frac = 1)
         users=users.head(f)
-        self.UserRating=self.UserRating[self.UserRating['user_id'].isin(users['user_id'].tolist())]
+        #self.TrainRating=self.TrainRating[self.TrainRating['user_id'].isin(users['user_id'].tolist())]
+
         dictmusicprepared= {
-        'song_id': (self.UserRating.song_id),
-        'user_id': list(self.UserRating.user_id),
-        'rating': list(self.UserRating.listen_count)}
+        'song_id': (self.TrainRating.song_id),
+        'user_id': list(self.TrainRating.user_id),
+        'rating': list(self.TrainRating.listen_count)}
         reader= Reader(rating_scale=(1, 100))
         dftrain=pd.DataFrame(dictmusicprepared)
         self.DataMusicTrain=Dataset.load_from_df(dftrain[['user_id', 'song_id', 'rating']], reader)
-        
+        self.GrupoSimilar=[]
+        self.GrupoAleatorio=[]
+
     def TrainTestData(self):
-        train_data, test_data = train_test_split(self.DataMusicTrain, test_size=.30)            
+        #train_data, test_data = train_test_split(self.DataMusicTrain, test_size=.20)            
+        #self.TestDataUse=pd.DataFrame(test_data.copy(), columns=['user_id', 'song_id','rating'])
+        test=self.TestRating.values.tolist()
+        test_data=test.copy()
+        train_data=self.DataMusicTrain.build_full_trainset()
         self.TestDataUse=pd.DataFrame(test_data.copy(), columns=['user_id', 'song_id','rating'])
         return train_data,test_data
 
@@ -77,28 +86,36 @@ class Main:
 
 
     def CreateGroupsWithSimilaritiesEval(self, train, test):
-        dftest=self.TestDataUse[["user_id"]]
-        dftest=dftest['user_id'].unique()
-        usertrain=train._raw2inner_id_users
-        listuser=[]
-        df1 = pd.DataFrame(usertrain.keys()) 
-        df1=df1[df1.columns[0]].unique()
-        pr = Prediction.BasePrediction(train,[])
-        modelcosine, similaritymatriz=pr.CalcularMatrizSimilaridad()
-        self.ModelCosine=modelcosine
-        usergroups=bg.ArmarGruposDefSimilaresEval(df1, self.Canciones,train,self.TestDataUse,similaritymatriz)
-        return usergroups
+        if(self.GrupoSimilar==[]):
+            dftest=self.TestDataUse[["user_id"]]
+            dftest=dftest['user_id'].unique()
+            usertrain=train._raw2inner_id_users
+            listuser=[]
+            df1 = pd.DataFrame(usertrain.keys()) 
+            df1=df1[df1.columns[0]].unique()
+            pr = Prediction.BasePrediction(train,[])
+            modelcosine, similaritymatriz=pr.CalcularMatrizSimilaridad()
+            self.ModelCosine=modelcosine
+            usergroups=bg.ArmarGruposDefSimilaresEval(df1, self.Canciones,train,self.TestDataUse,similaritymatriz)
+            self.GrupoSimilar=usergroups.copy()
+            return usergroups.copy()
+        else:
+            return self.GrupoSimilar.copy()
+        
         
     def CreateGroupsAleatoriosEval(self,train,test):
-        dftest=self.TestDataUse[["user_id"]]
-        dftest=dftest['user_id'].unique()
-        usertrain=train._raw2inner_id_users
-        listuser=[]
-        df1 = pd.DataFrame(usertrain.keys()) 
-        df1=df1[df1.columns[0]].unique()
-        usergroups=bg.ArmarGruposDefAleatorioEval(df1, self.Canciones,train,self.TestDataUse)
-        return usergroups
-            
+        if(self.GrupoAleatorio==[]):
+            dftest=self.TestDataUse[["user_id"]]
+            dftest=dftest['user_id'].unique()
+            usertrain=train._raw2inner_id_users
+            listuser=[]
+            df1 = pd.DataFrame(usertrain.keys()) 
+            df1=df1[df1.columns[0]].unique()
+            usergroups=bg.ArmarGruposDefAleatorioEval(df1, self.Canciones,train,self.TestDataUse)
+            self.GrupoAleatorio=usergroups.copy()
+            return usergroups.copy()
+        else:
+            return self.GrupoAleatorio.copy()    
  
     def EvalCosineAlgorithm(self):
         train,test=self.TrainTestData()

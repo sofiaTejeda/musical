@@ -41,7 +41,7 @@ def ArmarGruposDefAleatorioEval(df1,songs,traindata,datarating):
     while (len(df1) > 0):
         userlist=[]
         cancionrecomendar=[]
-        n = random.randint(5,10)
+        n = random.randint(3,5)
         listcanciones=[]
         dictcanciones = {}            
         userlistid=[]
@@ -131,7 +131,7 @@ def ArmarGruposDefSimilaresEval(df1,songs,traindata,datarating,simMatrix):
         cancionrecomendar=[]
         dictcanciones = {}   
         listcanciones=[]       
-        n = random.randint(4,9)
+        n = random.randint(2,4)
         user=df1[0]            
         testuserInnerId=traindata.to_inner_uid(user)
         similarUsers=[]
@@ -231,7 +231,7 @@ def ArmarGruposDefSimilaresFunc(df1,traindata,simMatrix):
     while (len(df1) > 0):
         userlist=[]
         userlstid=[]       
-        n = random.randint(4,9)
+        n = random.randint(2,4)
         user=df1[0]            
         testuserInnerId=traindata.to_inner_uid(user)
         similarUsers=[]
