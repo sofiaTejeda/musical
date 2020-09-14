@@ -44,12 +44,10 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
-*.json
+sistemarecomendaciongrupos.json
+#*.json
 *.rar
-*.txt
-*.csv
+#*.txt
+#*.csv
 *.7z
 *.xlsx
-DatasetMusica/10000.txt
-DatasetMusica/millionsong.
-DatasetMusica/songs.csv.7z
